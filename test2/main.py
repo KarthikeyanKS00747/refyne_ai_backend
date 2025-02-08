@@ -78,9 +78,21 @@ async def upload(
     
     try:
         # Validate CSV format
-        pd.read_csv(io.StringIO(csv_text))
+        df = pd.read_csv(io.StringIO(csv_text))
+        utils.find_dataset(data_desc=string2, model_name=string1)
+
+        # Basic validation
+        if df.empty:
+            raise HTTPException(status_code=400, detail="CSV file is empty")
+        
+    except pd.errors.EmptyDataError:
+        raise HTTPException(status_code=400, detail="CSV file is empty")
+    except pd.errors.ParserError:
+        raise HTTPException(status_code=400, detail="Invalid CSV format")
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid CSV format")
+    
+
     
     # Create database record
     db_data = models.UserData(
